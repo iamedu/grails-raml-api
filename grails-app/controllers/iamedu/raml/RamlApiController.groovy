@@ -2,8 +2,16 @@ package iamedu.raml
 
 class RamlApiController {
 
+  def ramlHandlerService
+
   def handle() {
-    println "Hola mundo"
+    def jsonRequest = request.JSON
+
+    def validator = ramlHandlerService.buildValidator()
+    def resource = validator.handleResource(request.forwardURI)
+
+    println resource
+
     render "Hola mundo"
   }
 }
