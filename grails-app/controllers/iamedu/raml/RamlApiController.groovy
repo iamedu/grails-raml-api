@@ -1,5 +1,6 @@
 package iamedu.raml
 
+
 class RamlApiController {
 
   def ramlHandlerService
@@ -10,7 +11,9 @@ class RamlApiController {
     def validator = ramlHandlerService.buildValidator()
     def resource = validator.handleResource(request.forwardURI)
 
-    println resource
+    resource.handleRequest(request)
+
+    log.debug "About to invoke service ${resource.serviceName} method ${request.method}"
 
     render "Hola mundo"
   }

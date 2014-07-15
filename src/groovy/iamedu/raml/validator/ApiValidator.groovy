@@ -42,8 +42,8 @@ class ApiValidator {
     def params = (resourcePath =~ partPattern).collect { it }
 
     def pattern = Pattern.compile(basePath + regexPath)
-
-    endpoints.put(pattern, new EndpointValidator(resourcePath, resource, params, actions))
+    
+    endpoints.put(pattern, new EndpointValidator(raml, resourcePath, resource, params, actions))
   }
 
   private def processEndpoints(String prefix, Map resources) {

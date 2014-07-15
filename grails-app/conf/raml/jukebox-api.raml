@@ -105,6 +105,7 @@ traits:
           default: 10
 
 /songs:
+  displayName: Songs
   type:
     collection:
       exampleCollection: !include jukebox-include-songs.sample
@@ -116,10 +117,12 @@ traits:
           pageable
         ]
   /{songId}:
+    displayName: Song
     type:
       collection-item:
         exampleItem: !include jukebox-include-song-retrieve.sample
     /file-content:
+      displayName: Song File Content
       description: The file to be reproduced by the client
       get:
         description: Get the file content
@@ -145,6 +148,7 @@ traits:
                 required: true
                 type: file
 /artists:
+  displayName: Artists
   type:
     collection:
       exampleCollection: !include jukebox-include-artists.sample
@@ -156,10 +160,12 @@ traits:
           pageable
         ]
   /{artistId}:
+    displayName: Artist
     type:
       collection-item:
         exampleItem: !include jukebox-include-artist-retrieve.sample
     /albums:
+      displayName: Artist albums
       type:
         readOnlyCollection:
           exampleCollection: !include jukebox-include-artist-albums.sample
@@ -168,6 +174,7 @@ traits:
         description: Get a specific artist's albums list
         is: [orderable: {fieldsList: "albumName"}, pageable]
 /albums:
+  displayName: Albums
   type:
     collection:
       exampleCollection: !include jukebox-include-albums.sample
@@ -179,10 +186,12 @@ traits:
           pageable
         ]
   /{albumId}:
+    displayName: Album
     type:
       collection-item:
         exampleItem: !include jukebox-include-album-retrieve.sample
     /songs:
+      displayName: Album songs
       type:
         readOnlyCollection:
           exampleCollection: !include jukebox-include-album-songs.sample
