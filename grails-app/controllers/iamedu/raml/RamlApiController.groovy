@@ -1,11 +1,16 @@
 package iamedu.raml
 
+import iamedu.raml.exception.handlers.*
 import iamedu.raml.exception.*
+
 import grails.converters.JSON
 
 class RamlApiController {
 
-  def ramlHandlerService
+  def grailsApp
+  RamlHandlerService ramlHandlerService
+  RamlValidationExceptionHandler ramlValidationExceptionHandler
+  RamlRequestExceptionHandler ramlRequestExceptionHandler
 
   def handle() {
     def jsonRequest = request.JSON
@@ -22,12 +27,19 @@ class RamlApiController {
 
   def handleRamlRequestException(RamlRequestException ex) {
     response.status = 400
-    render ex.jsonError as JSON
+
+    def errorResponse = ramlRequestExceptionHandler.handleRequestException(ex)
+
+    render errorResponse as JSON
   }
 
   def handleRamlValidationException(RamlValidationException ex) {
     response.status = 500
-    render ex.validationResults as JSON
+
+    log.error "Invalid raml definition", ex
+    def errorResponse = ramlValidationExceptionHandler.handleValidationException(ex)
+
+    render errorResponse as JSON
   }
 
 }

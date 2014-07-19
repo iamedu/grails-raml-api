@@ -9,7 +9,7 @@ class RamlRequestException extends RuntimeException {
   String method
   String requestUrl
   String body
-  JSONElement jsonError
+  Map jsonError
   ValidationReport validationReport
 
   RamlRequestException(String message, String requestUrl) {

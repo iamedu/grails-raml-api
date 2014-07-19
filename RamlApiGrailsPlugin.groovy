@@ -1,3 +1,5 @@
+import iamedu.raml.exception.handlers.*
+
 class RamlApiGrailsPlugin {
     // the plugin version
     def version = "0.1-SNAPSHOT"
@@ -41,7 +43,11 @@ class RamlApiGrailsPlugin {
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+      ramlValidationExceptionHandler(RamlDefaultValidationHandler) {
+      }
+
+      ramlRequestExceptionHandler(RamlDefaultRequestExceptionHandler) {
+      }
     }
 
     def doWithDynamicMethods = { ctx ->
