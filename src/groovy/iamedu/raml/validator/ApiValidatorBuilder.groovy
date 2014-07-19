@@ -13,7 +13,7 @@ class ApiValidatorBuilder {
   ResourceLoader resourceLoader
 
   ApiValidatorBuilder() {
-    this(new DefaultResourceLoader())
+    this(new GrailsResourceLoader())
   }
 
   ApiValidatorBuilder(ResourceLoader resourceLoader) {
@@ -31,6 +31,7 @@ class ApiValidatorBuilder {
     def validationService = RamlValidationService.createDefault(resourceLoader)
     def results = validationService.validate(ramlLocation)
     if(results.size() > 0) {
+      println results
       throw new RamlValidationException("Invalid raml file", ramlLocation, results)
     }
   }

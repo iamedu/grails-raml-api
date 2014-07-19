@@ -15,7 +15,7 @@ class RamlHandlerService {
       throw new RuntimeException("Raml definition is not set")
     }
     def builder = new ApiValidatorBuilder()
-    builder.setRamlLocation(ramlDefinition)
+    builder.setRamlLocation('raml/' + ramlDefinition)
 
     builder.build()
   }

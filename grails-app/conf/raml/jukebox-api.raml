@@ -173,6 +173,7 @@ traits:
       get:
         description: Get a specific artist's albums list
         is: [orderable: {fieldsList: "albumName"}, pageable]
+
 /albums:
   displayName: Albums
   type:
@@ -198,3 +199,4 @@ traits:
       get:
         is: [orderable: {fieldsList: "songTitle"}]
         description: Get the list of songs for the album with `albumId = {albumId}`
+
