@@ -70,7 +70,7 @@ class ApiValidator {
 
     def pattern = Pattern.compile(basePath + regexPath)
     
-    endpoints.put(pattern, new EndpointValidator(raml, resourcePath, resource, params, actions))
+    endpoints.put(pattern, new EndpointValidator(loader, raml, resourcePath, resource, params, actions))
   }
 
   private def processEndpoints(String prefix, Map resources) {

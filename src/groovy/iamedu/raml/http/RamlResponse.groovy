@@ -24,6 +24,11 @@ class RamlResponse {
     this
   }
 
+  RamlResponse contentType(String ct) {
+    contentType = ct
+    this
+  }
+
   RamlResponse json() {
     contentType = "application/json; charset=utf-8"
     this

@@ -26,6 +26,7 @@ environments {
   development {
     iamedu.raml.ramlDefinition = 'jukebox-api.raml'
     iamedu.raml.strictMode = true
+    iamedu.raml.serveExamples = true
     iamedu.raml.reload = true
   }
 }

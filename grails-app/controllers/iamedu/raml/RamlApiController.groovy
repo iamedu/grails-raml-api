@@ -70,26 +70,36 @@ class RamlApiController {
             invokeParams.push(param)
           }
           result = method.invoke(service, invokeParams as Object[])
-        }
-        try {
-          endpointValidator.handleResponse(request, result)
-        } catch(RamlResponseValidationException ex) {
-          def beans = grailsApplication.mainContext.getBeansOfType(RamlResponseValidationExceptionHandler.class)
-          beans.each {
-            it.handleResponseValidationException(ex)
-          }
-          if(config.iamedu.raml.strictMode) {
-            throw ex
+          try {
+            endpointValidator.handleResponse(request, result)
+          } catch(RamlResponseValidationException ex) {
+            def beans = grailsApplication.mainContext.getBeansOfType(RamlResponseValidationExceptionHandler.class)
+            beans.each {
+              it.handleResponseValidationException(ex)
+            }
+            if(config.iamedu.raml.strictMode) {
+              throw ex
+            }
           }
         }
       } else if(methods.size() > 1) {
         throw new RuntimeException("Only one method can be named ${methodName} in service ${request.serviceName}")
+      } else {
+        if(!config.iamedu.raml.serveExamples) {
+          throw new RuntimeException("No method named ${methodName} in service ${request.serviceName}")
+        }
       }
     } else {
-      throw new RuntimeException("No service name ${request.serviceName} exists")
+      if(!config.iamedu.raml.serveExamples) {
+        throw new RuntimeException("No service name ${request.serviceName} exists")
+      }
     }
     
     log.debug "About to invoke service ${request.serviceName} method $request.method}"
+
+    if(result == null && config.iamedu.raml.serveExamples) {
+      result = endpointValidator.generateExampleResponse(request)
+    }
 
     response.status = result.statusCode
 
@@ -136,6 +146,7 @@ class RamlApiController {
 
     response.status = errorResponse.statusCode
 
+    log.error ex.message, ex
     if(errorResponse.contentType?.startsWith("application/json")) {
       render errorResponse.body as JSON
     } else {

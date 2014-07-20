@@ -23,18 +23,49 @@ class EndpointValidator {
   List<String> params
 
   Resource resource
+  ResourceLoader loader
   Map<String, Action> actions
 
-  EndpointValidator(Raml raml, String path, Resource resource, List<String> params, Map<String, Action> actions) {
+  EndpointValidator(ResourceLoader loader, Raml raml, String path, Resource resource, List<String> params, Map<String, Action> actions) {
     this.raml     = raml
     this.path     = path
     this.params   = params
     this.resource = resource
+    this.loader   = loader
     this.actions  = actions.collectEntries { k, v ->
       [k.toString(), v]
     }
 
     setup()
+  }
+
+  def generateExampleResponse(def request) {
+    def action = actions.get(request.method.toUpperCase())
+    def ramlResponse = action.getResponses().find { k, v ->
+      k.toInteger() < 300
+    }
+
+
+    def result = iamedu.raml.http.RamlResponse.create()
+      .statusCode(ramlResponse.key.toInteger())
+
+    def body = ramlResponse.value.body.get("application/json")
+    if(body) {
+      if(body.example) {
+        def resource = "raml/" + body.example.trim()
+        def bodyContents = loader.fetchResource(resource)?.getText("UTF-8")
+        if(bodyContents) {
+          result = result.body(JSON.parse(bodyContents))
+        }
+      }
+    } else {
+      body = ramlResponse.value.body.find { k, v ->
+        true
+      }
+      result = result.contentType(body.key).body(body.value)
+    }
+
+    result
   }
 
   def handleResponse(def request, def response) {
@@ -86,6 +117,8 @@ class EndpointValidator {
         response.body.toString(),
         RamlResponseValidationException.ErrorReason.INVALID_STATUS_CODE)
     }
+
+    response
   }
 
   def handleRequest(def request) {
