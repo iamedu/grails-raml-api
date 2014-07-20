@@ -3,12 +3,12 @@ package iamedu.raml.security
 class DefaultSecurityHandler implements SecurityHandler {
 
   @Override
-  boolean userAuthenticated() {
+  boolean userAuthenticated(Map request) {
     true
   }
 
   @Override
-  boolean authorizedExecution(String serviceName, String method) {
+  boolean authorizedExecution(Map request) {
     true
   }
 

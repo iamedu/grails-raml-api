@@ -26,11 +26,11 @@ class RamlApiController {
     def request = endpointValidator.handleRequest(request)
     def methodName = request.method.toLowerCase()
 
-    if(!securityHandler.userAuthenticated()) {
+    if(!securityHandler.userAuthenticated(request)) {
       throw new RamlSecurityException("User has not been authenticated")
     }
 
-    if(!securityHandler.authorizedExecution(request.serviceName, methodName)) {
+    if(!securityHandler.authorizedExecution(request)) {
       throw new RamlSecurityException("User has no permission to access service ${request.serviceName} method ${methodName}",
         request.serviceName,
         methodName)
@@ -61,12 +61,19 @@ class RamlApiController {
           def invokeParams = []
           method.parameterTypes.eachWithIndex { it, i ->
             def param
-            def annotation =  method.parameterAnnotations[i].find {
+            def paramAnnotation =  method.parameterAnnotations[i].find {
               it.annotationType() == iamedu.raml.http.RamlParam
             }
-            if(annotation) {
-              def parameterName = annotation.value()
+            def queryAnnotation =  method.parameterAnnotations[i].find {
+              it.annotationType() == iamedu.raml.http.RamlQueryParam
+            }
+            if(paramAnnotation) {
+              def parameterName = paramAnnotation.value()
               def paramValue = params[parameterName]
+              param = paramValue.asType(it)
+            } else if(queryAnnotation) {
+              def parameterName = queryAnnotation.value()
+              def paramValue = request.queryParams[parameterName]
               param = paramValue.asType(it)
             } else if(Map.isAssignableFrom(it)) {
               param = JSON.parse(request.jsonBody.toString())

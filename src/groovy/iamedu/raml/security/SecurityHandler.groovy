@@ -1,6 +1,6 @@
 package iamedu.raml.security
 
 interface SecurityHandler {
-  boolean userAuthenticated()
-  boolean authorizedExecution(String serviceName, String method)
+  boolean userAuthenticated(Map request)
+  boolean authorizedExecution(Map request)
 }

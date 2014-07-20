@@ -6,6 +6,7 @@ import org.apache.commons.lang.WordUtils
 import org.commonjava.mimeparse.MIMEParse
 import org.eel.kitchen.jsonschema.main.*
 import org.eel.kitchen.jsonschema.util.JsonLoader
+import org.codehaus.groovy.grails.web.util.WebUtils
 
 import org.raml.model.*
 import org.raml.parser.visitor.*
@@ -126,9 +127,18 @@ class EndpointValidator {
       throw new RamlRequestException("Method ${request.method} for endpoint ${resource} does not exist", request.forwardURI, request.method)
     }
 
+    def queryParams = [:]
     def action = actions.get(request.method.toUpperCase())
     def jsonBody
     def bestMatch
+
+    if(request.queryString) {
+      queryParams = WebUtils.fromQueryString(request.queryString)
+      queryParams = action.queryParameters.collectEntries { k, v ->
+        [k, queryParams.get(k)]
+      }
+    }
+
 
     if(action.hasBody()) {
       bestMatch = MIMEParse.bestMatch(action.body.keySet(), request.getHeader("Accept"))
@@ -171,7 +181,8 @@ class EndpointValidator {
       params: params,
       accept: bestMatch,
       method: request.method,
-      headers: headers
+      headers: headers,
+      queryParams: queryParams
     ]
 
     result
