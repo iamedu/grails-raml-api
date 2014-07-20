@@ -34,6 +34,7 @@ grails.project.dependency.resolution = {
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
         mavenRepo "https://repository-master.mulesoft.org/releases/"
+        mavenRepo "http://dl.bintray.com/upennlib/maven/"
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
@@ -45,7 +46,8 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        build(":release:3.0.1",
+        build(":bintray-upload:0.2",
+              ":release:3.0.1",
               ":rest-client-builder:1.0.3") {
             export = false
         }
