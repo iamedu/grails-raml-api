@@ -7,6 +7,8 @@ import iamedu.raml.security.*
 import grails.converters.JSON
 import grails.util.Holders
 
+import org.springframework.util.AntPathMatcher
+
 class RamlApiController {
 
   def grailsApplication
@@ -23,24 +25,26 @@ class RamlApiController {
     def validator = ramlHandlerService.buildValidator()
     def (endpointValidator, paramValues) = validator.handleResource(request.forwardURI)
 
-    def request = endpointValidator.handleRequest(request)
-    def methodName = request.method.toLowerCase()
+    def req = endpointValidator.handleRequest(request)
+    def methodName = req.method.toLowerCase()
 
-    if(!securityHandler.userAuthenticated(request)) {
-      throw new RamlSecurityException("User has not been authenticated")
-    }
+    if(!isPublicUrl(req.requestUrl)) {
+      if(!securityHandler.userAuthenticated(req)) {
+        throw new RamlSecurityException("User has not been authenticated")
+      }
 
-    if(!securityHandler.authorizedExecution(request)) {
-      throw new RamlSecurityException("User has no permission to access service ${request.serviceName} method ${methodName}",
-        request.serviceName,
-        methodName)
+      if(!securityHandler.authorizedExecution(req)) {
+        throw new RamlSecurityException("User has no permission to access service ${req.serviceName} method ${methodName}",
+          req.serviceName,
+          methodName)
+      }
     }
 
     def service
     def result
 
-    if(grailsApplication.mainContext.containsBean(request.serviceName)) {
-      service = grailsApplication.mainContext.getBean(request.serviceName)
+    if(grailsApplication.mainContext.containsBean(req.serviceName)) {
+      service = grailsApplication.mainContext.getBean(req.serviceName)
     }
 
     if(service) {
@@ -51,7 +55,7 @@ class RamlApiController {
       if(methods.size() == 1) {
         def method = methods.first()
 
-        def params = [request.params, paramValues].transpose().collectEntries {
+        def params = [req.params, paramValues].transpose().collectEntries {
           [it[0].replaceAll("\\{|\\}", ""), it[1]]
         }
 
@@ -73,16 +77,16 @@ class RamlApiController {
               param = paramValue.asType(it)
             } else if(queryAnnotation) {
               def parameterName = queryAnnotation.value()
-              def paramValue = request.queryParams[parameterName]
+              def paramValue = req.queryParams[parameterName]
               param = paramValue.asType(it)
             } else if(Map.isAssignableFrom(it)) {
-              param = JSON.parse(request.jsonBody.toString())
+              param = JSON.parse(req.jsonBody.toString())
             }
             invokeParams.push(param)
           }
           result = method.invoke(service, invokeParams as Object[])
           try {
-            endpointValidator.handleResponse(request, result)
+            endpointValidator.handleResponse(req, result)
           } catch(RamlResponseValidationException ex) {
             def beans = grailsApplication.mainContext.getBeansOfType(RamlResponseValidationExceptionHandler.class)
             beans.each {
@@ -94,22 +98,22 @@ class RamlApiController {
           }
         }
       } else if(methods.size() > 1) {
-        throw new RuntimeException("Only one method can be named ${methodName} in service ${request.serviceName}")
+        throw new RuntimeException("Only one method can be named ${methodName} in service ${req.serviceName}")
       } else {
         if(!config.iamedu.raml.serveExamples) {
-          throw new RuntimeException("No method named ${methodName} in service ${request.serviceName}")
+          throw new RuntimeException("No method named ${methodName} in service ${req.serviceName}")
         }
       }
     } else {
       if(!config.iamedu.raml.serveExamples) {
-        throw new RuntimeException("No service name ${request.serviceName} exists")
+        throw new RuntimeException("No service name ${req.serviceName} exists")
       }
     }
     
-    log.debug "About to invoke service ${request.serviceName} method $request.method}"
+    log.debug "About to invoke service ${req.serviceName} method $req.method}"
 
     if(result == null && config.iamedu.raml.serveExamples) {
-      result = endpointValidator.generateExampleResponse(request)
+      result = endpointValidator.generateExampleResponse(req)
     }
 
     response.status = result.statusCode
@@ -185,6 +189,19 @@ class RamlApiController {
       }
     }
     handler
+  }
+
+  private def isPublicUrl(String url) {
+    def matcher = new AntPathMatcher()
+    def publicUrls = config.iamedu.raml.security.publicUrls
+
+    if(!publicUrls) {
+      return false
+    }
+
+    publicUrls.any {
+      matcher.match(it, url)
+    }   
   }
 
 }
