@@ -42,13 +42,15 @@ class EndpointValidator {
     }
 
     def action = actions.get(request.method.toUpperCase())
+    def jsonBody
+    def bestMatch
 
     if(action.hasBody()) {
-      def match = MIMEParse.bestMatch(action.body.keySet(), request.getHeader("Accept"))
+      bestMatch = MIMEParse.bestMatch(action.body.keySet(), request.getHeader("Accept"))
       def mimeType
 
-      if(match) {
-        mimeType = action.body.get(match)
+      if(bestMatch) {
+        mimeType = action.body.get(bestMatch)
       } else {
         throw new RamlRequestException("Unable to find a matching mime type for ${path}", path, request.method)
       }
@@ -60,7 +62,7 @@ class EndpointValidator {
         def schema = factory.fromSchema(schemaFormat)
 
         def stringBody = request.JSON.toString()
-        def jsonBody = JsonLoader.fromString(stringBody)
+        jsonBody = JsonLoader.fromString(stringBody)
         def report =  schema.validate(jsonBody)
 
         if(!report.isSuccess()) {
@@ -72,6 +74,21 @@ class EndpointValidator {
         }
       }
     }
+
+    def headers = request.headerNames.toList().collectEntries {
+      [it, request.getHeaders(it).toList()]
+    }
+
+    def result = [
+      serviceName: serviceName,
+      jsonBody: jsonBody,
+      params: params,
+      accept: bestMatch,
+      method: request.method,
+      headers: headers
+    ]
+
+    result
   }
 
   boolean supportsMethod(String method) {

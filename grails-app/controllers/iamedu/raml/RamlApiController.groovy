@@ -7,7 +7,7 @@ import grails.converters.JSON
 
 class RamlApiController {
 
-  def grailsApp
+  def grailsApplication
   RamlHandlerService ramlHandlerService
   RamlValidationExceptionHandler ramlValidationExceptionHandler
   RamlRequestExceptionHandler ramlRequestExceptionHandler
@@ -16,11 +16,12 @@ class RamlApiController {
     def jsonRequest = request.JSON
 
     def validator = ramlHandlerService.buildValidator()
-    def resource = validator.handleResource(request.forwardURI)
+    def endpointValidator = validator.handleResource(request.forwardURI)
 
-    resource.handleRequest(request)
+    def request = endpointValidator.handleRequest(request)
+    def service = grailsApplication.mainContext.getBean(request.serviceName)
 
-    log.debug "About to invoke service ${resource.serviceName} method ${request.method}"
+    log.debug "About to invoke service ${request.serviceName} method $request.method}"
 
     render "Hola mundo"
   }
