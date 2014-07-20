@@ -6,17 +6,20 @@ import iamedu.raml.http.RamlResponse
 class UserDefaultExceptionHandler implements UserExceptionHandler<Exception> {
   RamlResponse handleException(Exception exception) {
     def cause = GrailsUtil.extractRootCause(exception)
-    RamlResponse.create().statusCode(500).body([
+    def responseBody = [
       errorCode: "unhandledError",
-      received: [
+      exception: [
         message: exception.message,
         class: exception.class.name
-      ],
-      original: [
+      ]
+    ]
+    if(exception != cause) {
+      responseBody.cause = [
         message: cause.message,
         class: cause.class.name
       ]
-    ])
+    }
+    RamlResponse.create().statusCode(500).body(responseBody)
   }
 }
 

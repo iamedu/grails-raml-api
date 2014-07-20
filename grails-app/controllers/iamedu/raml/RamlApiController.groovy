@@ -192,7 +192,7 @@ class RamlApiController {
         t = t.superclass
       }
 
-      if(currentDepth < depth) {
+      if(currentDepth < depth && t && t != Throwable.class) {
         depth = currentDepth
         handler = entry.value
       }
