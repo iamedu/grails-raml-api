@@ -25,6 +25,7 @@ log4j = {
 environments {
   development {
     iamedu.raml.ramlDefinition = 'jukebox-api.raml'
+    iamedu.raml.strictMode = true
     iamedu.raml.reload = true
   }
 }

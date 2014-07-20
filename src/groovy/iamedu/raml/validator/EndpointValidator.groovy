@@ -13,6 +13,7 @@ import org.raml.parser.loader.*
 
 import java.util.*
 
+import grails.converters.JSON
 
 class EndpointValidator {
   Raml raml
@@ -34,6 +35,57 @@ class EndpointValidator {
     }
 
     setup()
+  }
+
+  def handleResponse(def request, def response) {
+    def error = null
+    def action = actions.get(request.method.toUpperCase())
+    def ramlResponse = action.getResponses().get("${response.statusCode}".toString())
+    def contentType = response.contentType.split(";")[0]
+    def method = request.method.toLowerCase()
+
+    if(ramlResponse) {
+      def mimeType = ramlResponse.body.get(contentType)
+      if(mimeType) {
+        if(mimeType.schema) {
+          def schemaFormat = JsonLoader.fromString(raml.consolidatedSchemas.get(mimeType.schema))
+          def factory = JsonSchemaFactory.defaultFactory()
+
+          def schema = factory.fromSchema(schemaFormat)
+
+          def stringBody = (response.body as JSON).toString()
+          jsonBody = JsonLoader.fromString(stringBody)
+          def report =  schema.validate(jsonBody)
+
+          if(!report.isSuccess()) {
+            throw new RamlResponseValidationException("Invalid content type ${contentType} replied from ${request.serviceName} ${method}",
+              request.serviceName,
+              method,
+              response.statusCode,
+              contentType,
+              stringBody,
+              RamlResponseValidationException.ErrorReason.INVALID_BODY,
+              report)
+          }
+        }
+      } else {
+        throw new RamlResponseValidationException("Invalid content type ${contentType} replied from ${request.serviceName} ${method}",
+          request.serviceName,
+          method,
+          response.statusCode,
+          contentType,
+          response.body.toString(),
+          RamlResponseValidationException.ErrorReason.INVALID_MIME_TYPE)
+      }
+    } else {
+      throw new RamlResponseValidationException("Invalid status code ${response.statusCode} replied from ${request.serviceName} ${method}",
+        request.serviceName,
+        method,
+        response.statusCode,
+        contentType,
+        response.body.toString(),
+        RamlResponseValidationException.ErrorReason.INVALID_STATUS_CODE)
+    }
   }
 
   def handleRequest(def request) {

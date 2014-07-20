@@ -1,6 +1,9 @@
 import iamedu.raml.exception.handlers.*
+import iamedu.raml.security.*
 
 import grails.converters.JSON
+
+import org.springframework.aop.scope.ScopedProxyFactoryBean
 
 class RamlApiGrailsPlugin {
     // the plugin version
@@ -51,7 +54,19 @@ class RamlApiGrailsPlugin {
       ramlRequestExceptionHandler(RamlDefaultRequestExceptionHandler) {
       }
 
+      ramlSecurityExceptionHandler(RamlDefaultSecurityExceptionHandler) {
+      }
+
       generalExceptionHandler(UserDefaultExceptionHandler) {
+      }
+
+      securityHandler(ScopedProxyFactoryBean) {
+        targetBeanName = 'ramlSecurityHandler'
+        proxyTargetClass = true
+      }
+
+      ramlSecurityHandler(DefaultSecurityHandler) { bean ->
+        bean.scope = 'session'
       }
     }
 
