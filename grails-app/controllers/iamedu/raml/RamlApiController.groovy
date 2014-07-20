@@ -60,7 +60,11 @@ class RamlApiController {
         }
 
         if(method.parameterTypes.size() == 0) {
-          result = method.invoke(service)
+          try {
+            result = method.invoke(service)
+          } catch(Exception ex) {
+            result = handleServiceException(service, ex)
+          }
         } else {
           def invokeParams = []
           method.parameterTypes.eachWithIndex { it, i ->
@@ -84,7 +88,11 @@ class RamlApiController {
             }
             invokeParams.push(param)
           }
-          result = method.invoke(service, invokeParams as Object[])
+          try {
+            result = method.invoke(service, invokeParams as Object[])
+          } catch(Exception ex) {
+            result = handleServiceException(service, ex)
+          }
           try {
             endpointValidator.handleResponse(req, result)
           } catch(RamlResponseValidationException ex) {
@@ -178,17 +186,45 @@ class RamlApiController {
       }.first().actualTypeArguments.first()
 
       Integer currentDepth = 0
-      Throwable t = ex
-      while(t && t.class != Throwable.class && t.class != type) {
+      Class t = ex.class
+      while(t && t != Throwable.class && t != type) {
         currentDepth += 1
-        t = t.cause
+        t = t.superclass
       }
 
       if(currentDepth < depth) {
+        depth = currentDepth
         handler = entry.value
       }
     }
     handler
+  }
+
+  private def handleServiceException(def service, Exception ex) {
+    Integer depth = Integer.MAX_VALUE
+    def handler = null
+    for(def entry : service.class.getMethods()) {
+      if(!entry.getName().startsWith("handle") || !entry.parameterTypes.size() == 1) {
+        continue
+      }
+      def type = entry.parameterTypes.first()
+
+      Integer currentDepth = 0
+      Class t = ex.class
+      while(t && t != Throwable.class && t != type) {
+        currentDepth += 1
+        t = t.superclass
+      }
+
+      if(currentDepth < depth && t && t != Throwable.class) {
+        depth = currentDepth
+        handler = entry
+      }
+    }
+    if(!handler) {
+      throw ex
+    }
+    handler.invoke(service, ex)
   }
 
   private def isPublicUrl(String url) {
