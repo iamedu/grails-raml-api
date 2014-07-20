@@ -167,6 +167,9 @@ class EndpointValidator {
             report,
             stringBody)
         }
+      } else {
+        def stringBody = request.JSON.toString()
+        jsonBody = JsonLoader.fromString(stringBody)
       }
     }
 
