@@ -23,12 +23,19 @@ class ApiValidator {
   }
 
   def handleResource(String resource) {
+    def matcher
+
     def entry = endpoints.find { endpoint, validator ->
-      resource ==~ endpoint
+      matcher = resource =~ endpoint
+      matcher.matches()
     }
 
     if(entry) {
-      return entry.value
+      def params = []
+      if(matcher[0] instanceof java.util.List) {
+        params = matcher[0].drop(1).collect { it }
+      }
+      return [entry.value, params]
     } else {
       throw new RamlRequestException("Endpoint ${resource} does not exist", resource)
     }

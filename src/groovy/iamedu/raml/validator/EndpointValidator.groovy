@@ -80,6 +80,7 @@ class EndpointValidator {
     }
 
     def result = [
+      hasBody: action.hasBody(),
       serviceName: serviceName,
       jsonBody: jsonBody,
       params: params,

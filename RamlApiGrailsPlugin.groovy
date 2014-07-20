@@ -1,5 +1,7 @@
 import iamedu.raml.exception.handlers.*
 
+import grails.converters.JSON
+
 class RamlApiGrailsPlugin {
     // the plugin version
     def version = "0.1-SNAPSHOT"
@@ -55,7 +57,10 @@ class RamlApiGrailsPlugin {
     }
 
     def doWithApplicationContext = { ctx ->
-        // TODO Implement post initialization spring config (optional)
+        println "Setting up raml api plugin"
+        JSON.registerObjectMarshaller(com.fasterxml.jackson.databind.node.ObjectNode) {
+          JSON.parse(it.toString())
+        }
     }
 
     def onChange = { event ->
