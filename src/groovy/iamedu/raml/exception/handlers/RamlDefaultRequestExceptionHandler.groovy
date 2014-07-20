@@ -7,8 +7,15 @@ class RamlDefaultRequestExceptionHandler implements RamlRequestExceptionHandler 
 
   @Override
   RamlErrorResponse handleRequestException(RamlRequestException exception) {
-    def jsonError = new java.util.HashMap(exception.jsonError)
-    jsonError.requestBody = JSON.parse(exception.body)
+    def jsonError
+    if(exception.jsonError) {
+      jsonError = new java.util.HashMap(exception.jsonError)
+    } else {
+      jsonError = new java.util.HashMap()
+    }
+    if(exception.body) {
+      jsonError.requestBody = JSON.parse(exception.body)
+    }
     def errorResponse = new RamlErrorResponse([message: exception.message,
                                                errorCode: "invalidRequest",
                                                errorMeta: jsonError])
