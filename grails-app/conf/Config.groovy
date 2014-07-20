@@ -1,5 +1,5 @@
 // configuration for plugin testing - will not be included in the plugin zip
-grails.project.repos.bintray.url = ''
+grails.project.repos.bintray.url = 'https://api.bintray.com/maven/iamedu/maven/raml-api'
 grails.project.repos.default = 'bintray'
 
 log4j = {
