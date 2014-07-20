@@ -7,7 +7,7 @@ import org.springframework.aop.scope.ScopedProxyFactoryBean
 
 class RamlApiGrailsPlugin {
     // the plugin version
-    def version = "0.1-SNAPSHOT"
+    def version = "0.1.0-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
@@ -48,6 +48,7 @@ class RamlApiGrailsPlugin {
     }
 
     def doWithSpring = {
+      println "Setting up raml api plugin"
       ramlValidationExceptionHandler(RamlDefaultValidationHandler) {
       }
 
@@ -75,7 +76,6 @@ class RamlApiGrailsPlugin {
     }
 
     def doWithApplicationContext = { ctx ->
-        println "Setting up raml api plugin"
         JSON.registerObjectMarshaller(com.fasterxml.jackson.databind.node.ObjectNode) {
           JSON.parse(it.toString())
         }
