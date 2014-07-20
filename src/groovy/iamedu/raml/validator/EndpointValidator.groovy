@@ -182,7 +182,8 @@ class EndpointValidator {
       accept: bestMatch,
       method: request.method,
       headers: headers,
-      queryParams: queryParams
+      queryParams: queryParams,
+      requestUrl: request.forwardURI.replaceFirst(request.contextPath, "")
     ]
 
     result
