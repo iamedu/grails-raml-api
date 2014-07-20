@@ -42,6 +42,7 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         // runtime 'mysql:mysql-connector-java:5.1.27'
         compile "org.raml:raml-parser:0.8.6"
+        compile "commons-beanutils:commons-beanutils:1.9.2"
         compile "org.commonjava.mimeparse:mimeparse:0.1.3.3"
         compile "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4"
         compile "jmimemagic:jmimemagic:0.1.2"
