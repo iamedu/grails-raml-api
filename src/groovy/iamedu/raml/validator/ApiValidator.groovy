@@ -7,31 +7,51 @@ import java.util.regex.*
 import org.raml.model.*
 import org.raml.parser.visitor.*
 import org.raml.parser.loader.*
+import grails.util.Holders
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 
 class ApiValidator {
 
+  def config = Holders.config
+  
   String basePath
 
+  Integer maxCacheCapacity = 5000
   Raml raml
   ResourceLoader loader
   Map endpoints
+  Map entryCache
 
   ApiValidator(Raml raml, ResourceLoader loader) {
     this.raml = raml
     this.loader = loader
+    entryCache = new ConcurrentLinkedHashMap.Builder()
+      .maximumWeightedCapacity(maxCacheCapacity)
+      .build()
     setupValidator()
   }
 
   def handleResource(String resource) {
-    def matcher
 
-    def entry = endpoints.find { endpoint, validator ->
-      matcher = resource =~ endpoint
-      matcher.matches()
+    def entry = null
+    def reloadRaml = config.iamedu.raml.reload
+
+    entry = entryCache.get(resource)
+
+    if(!entry) {
+      entry = endpoints.find { endpoint, validator ->
+        def matcher = resource =~ endpoint
+        matcher.matches()
+      }
+      if(!reloadRaml) {
+        entryCache.put(resource, entry)
+      }
     }
 
     if(entry) {
       def params = []
+      def matcher = resource =~ entry.key
       if(matcher[0] instanceof java.util.List) {
         params = matcher[0].drop(1).collect { it }
       }

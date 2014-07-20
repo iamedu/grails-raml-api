@@ -49,7 +49,6 @@ class RamlApiController {
         }
         invokeParams.push(param)
       }
-      println invokeParams
       result = method.invoke(service, invokeParams as Object[])
     }
 
