@@ -6,6 +6,7 @@ class RamlUrlMappings {
     def logger = LogFactory.getLog(RamlUrlMappings)
 
     def patternList = applicationContext.grailsApplication.config.iamedu.raml.mappings
+    def ramlDefinition = applicationContext.grailsApplication.config.iamedu.raml.ramlExportUrl
 
     if(!patternList) {
       patternList = ['/api']
@@ -13,11 +14,17 @@ class RamlUrlMappings {
 
     logger.info "Setting url mappings for RAML controller:"
 
+    if(ramlDefinition) {
+      "${ramlDefinition}/**"(controller:"ramlDocumentation")
+      logger.info("${ramlDefinition}/**")
+    }
+
     patternList.each { pattern ->
       "${pattern}"(controller:"ramlApi")
       "${pattern}/**"(controller:"ramlApi")
       logger.info("${pattern}")
       logger.info("${pattern}/**")
     }
+
 	}
 }

@@ -24,6 +24,7 @@ log4j = {
 
 environments {
   development {
+    iamedu.raml.ramlExportUrl = '/api/raml/'
     iamedu.raml.ramlDefinition = 'jukebox-api.raml'
     iamedu.raml.strictMode = true
     iamedu.raml.serveExamples = true

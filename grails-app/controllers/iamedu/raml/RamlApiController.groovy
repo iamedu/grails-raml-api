@@ -126,6 +126,11 @@ class RamlApiController {
 
     response.status = result.statusCode
 
+    header 'Access-Control-Allow-Origin', '*'
+    header 'Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS'
+    header 'Access-Control-Allow-Headers', 'origin, authorization, accept, content-type, x-requested-with, x-auth-token'
+    header 'Access-Control-Max-Age', '3600'
+
     if(result.contentType?.startsWith("application/json")) {
       render result.body as JSON
     } else {

@@ -41,10 +41,10 @@ grails.project.dependency.resolution = {
         compile "org.raml:raml-parser:0.8.6"
         compile "org.commonjava.mimeparse:mimeparse:0.1.3.3"
         compile "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4"
+        compile "jmimemagic:jmimemagic:0.1.2"
     }
 
     plugins {
-        build ":tomcat:7.0.52.1"
         build(":release:3.0.1",
               ":rest-client-builder:1.0.3") {
             export = false
