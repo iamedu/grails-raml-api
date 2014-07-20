@@ -36,8 +36,12 @@ class RamlApiController {
         methodName)
     }
 
-    def service = grailsApplication.mainContext.getBean(request.serviceName)
+    def service
     def result
+
+    if(grailsApplication.mainContext.containsBean(request.serviceName)) {
+      service = grailsApplication.mainContext.getBean(request.serviceName)
+    }
 
     if(service) {
       def methods = service.class.getMethods().grep {
