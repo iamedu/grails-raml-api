@@ -82,4 +82,39 @@ class RamlApiController {
     render errorResponse as JSON
   }
 
+  def handleException(Exception ex) {
+    def handler = determineHandler(ex)
+    def errorResponse = handler.handleException(ex)
+
+    response.status = errorResponse.statusCode
+
+    if(errorResponse.contentType?.startsWith("application/json")) {
+      render errorResponse.body as JSON
+    } else {
+      render errorResponse.body
+    }
+  }
+
+  private def determineHandler(Throwable ex) {
+    Integer depth = Integer.MAX_VALUE
+    def handler = null
+    for(def entry : grailsApplication.mainContext.getBeansOfType(UserExceptionHandler.class).entrySet()) {
+      def type = entry.value.getClass().getGenericInterfaces().grep {
+        it instanceof java.lang.reflect.ParameterizedType
+      }.first().actualTypeArguments.first()
+
+      Integer currentDepth = 0
+      Throwable t = ex
+      while(t && t.class != Throwable.class && t.class != type) {
+        currentDepth += 1
+        t = t.cause
+      }
+
+      if(currentDepth < depth) {
+        handler = entry.value
+      }
+    }
+    handler
+  }
+
 }

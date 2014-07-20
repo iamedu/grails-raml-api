@@ -14,6 +14,11 @@ class RamlResponse {
     new RamlResponse().ok().json()
   }
 
+  RamlResponse statusCode(int statusCode) {
+    this.statusCode = statusCode
+    this
+  }
+
   RamlResponse ok() {
     statusCode = 200
     this

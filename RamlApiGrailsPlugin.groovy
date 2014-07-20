@@ -50,6 +50,9 @@ class RamlApiGrailsPlugin {
 
       ramlRequestExceptionHandler(RamlDefaultRequestExceptionHandler) {
       }
+
+      generalExceptionHandler(UserDefaultExceptionHandler) {
+      }
     }
 
     def doWithDynamicMethods = { ctx ->
